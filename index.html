@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Спідометр</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            color: #fff;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        h1 {
+            font-size: clamp(2rem, 5vw, 4rem);
+            margin: 0.5rem 0;
+        }
+        #speed {
+            font-size: clamp(3rem, 12vw, 10rem);
+            font-weight: bold;
+            margin: 0.5rem 0;
+        }
+        .settings {
+            margin-top: 2rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+        }
+        label {
+            font-size: 1.2rem;
+        }
+        input {
+            font-size: 1.2rem;
+            padding: 0.4rem;
+            width: 6rem;
+            text-align: center;
+            background: #111;
+            border: 1px solid #444;
+            color: #fff;
+            border-radius: 4px;
+        }
+        button {
+            font-size: 1.2rem;
+            padding: 0.5rem 1rem;
+            background: #222;
+            border: 1px solid #555;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #333;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Твоя швидкість</h1>
+    <div id="speed">0.00</div>
+
+    <div class="settings">
+        <label for="freq">Інтервал оновлення (мс):</label>
+        <input type="number" id="freq" value="400" step="100" min="100">
+        <button onclick="applySettings()">Застосувати</button>
+    </div>
+
+    <script>
+        let prevLat, prevLng, prevTime;
+        let intervalID;
+
+        function getDistanceFromLatLonInMeters(lat1, lon1, lat2, lon2) {
+            const R = 6371000;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c;
+        }
+
+        function updateSpeed(position) {
+            const { latitude, longitude } = position.coords;
+            const currentTime = new Date().getTime();
+
+            if (prevLat !== undefined && prevLng !== undefined && prevTime !== undefined) {
+                const distance = getDistanceFromLatLonInMeters(prevLat, prevLng, latitude, longitude);
+                const timeDiff = (currentTime - prevTime) / 1000;
+                const speed = (distance / timeDiff) * 3.6;
+
+                document.getElementById('speed').textContent = speed.toFixed(2);
+            }
+
+            prevLat = latitude;
+            prevLng = longitude;
+            prevTime = currentTime;
+        }
+
+        function handleError(error) {
+            console.error('Помилка:', error);
+        }
+
+        function startTracking(frequency = 400) {
+            if (intervalID) clearInterval(intervalID);
+
+            intervalID = setInterval(() => {
+                navigator.geolocation.getCurrentPosition(updateSpeed, handleError, {
+                    enableHighAccuracy: true,
+                    maximumAge: 0,
+                    timeout: 1000
+                });
+            }, frequency);
+        }
+
+        function applySettings() {
+            const freqInput = document.getElementById('freq');
+            let freq = parseInt(freqInput.value);
+            if (isNaN(freq) || freq < 100) freq = 100;
+            startTracking(freq);
+        }
+
+        startTracking(400);
+    </script>
+
+</body>
+</html>
