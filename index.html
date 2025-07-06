@@ -1,13 +1,12 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>Спідометр</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
         html, body {
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
             background: #000;
             color: #fff;
             font-family: 'Segoe UI', Roboto, sans-serif;
@@ -17,15 +16,19 @@
             justify-content: center;
             min-height: 100vh;
             box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
         h1 {
             font-size: clamp(2rem, 5vw, 4rem);
             margin: 0.5rem 0;
+            user-select: none;
         }
         #speed {
             font-size: clamp(3rem, 12vw, 10rem);
             font-weight: bold;
             margin: 0.5rem 0;
+            user-select: none;
         }
         .settings {
             margin-top: 2rem;
@@ -34,6 +37,7 @@
             flex-wrap: wrap;
             align-items: center;
             justify-content: center;
+            user-select: none;
         }
         label {
             font-size: 1.2rem;
@@ -47,6 +51,12 @@
             border: 1px solid #444;
             color: #fff;
             border-radius: 4px;
+            outline-offset: 2px;
+            outline-color: transparent;
+            transition: outline-color 0.2s ease-in-out;
+        }
+        input:focus {
+            outline-color: #0f0;
         }
         button {
             font-size: 1.2rem;
@@ -57,9 +67,11 @@
             cursor: pointer;
             border-radius: 4px;
             transition: background 0.2s;
+            user-select: none;
         }
-        button:hover {
+        button:hover, button:focus {
             background: #333;
+            outline: none;
         }
     </style>
 </head>
@@ -70,7 +82,7 @@
 
     <div class="settings">
         <label for="freq">Інтервал оновлення (мс):</label>
-        <input type="number" id="freq" value="400" step="100" min="100">
+        <input type="number" id="freq" value="400" step="100" min="100" />
         <button onclick="applySettings()">Застосувати</button>
     </div>
 
@@ -92,14 +104,20 @@
 
         function updateSpeed(position) {
             const { latitude, longitude } = position.coords;
-            const currentTime = new Date().getTime();
+            const currentTime = Date.now();
 
             if (prevLat !== undefined && prevLng !== undefined && prevTime !== undefined) {
                 const distance = getDistanceFromLatLonInMeters(prevLat, prevLng, latitude, longitude);
                 const timeDiff = (currentTime - prevTime) / 1000;
                 const speed = (distance / timeDiff) * 3.6;
 
-                document.getElementById('speed').textContent = speed.toFixed(2);
+                if (!isNaN(speed) && isFinite(speed)) {
+                    document.getElementById('speed').textContent = speed.toFixed(2);
+                } else {
+                    document.getElementById('speed').textContent = "0.00";
+                }
+            } else {
+                document.getElementById('speed').textContent = "0.00";
             }
 
             prevLat = latitude;
@@ -108,7 +126,8 @@
         }
 
         function handleError(error) {
-            console.error('Помилка:', error);
+            console.error('Помилка геолокації:', error);
+            document.getElementById('speed').textContent = "0.00";
         }
 
         function startTracking(frequency = 400) {
