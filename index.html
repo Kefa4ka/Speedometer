@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Спідометр GPS</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {
             margin: 0;
@@ -14,24 +15,13 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a0033 50%, #000000 100%);
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             min-height: 100vh;
             color: #ffffff;
             overflow-x: hidden;
         }
 
-        /* Added neon glow keyframes and effects */
-        @keyframes neonGlow {
-            0%, 100% { 
-                text-shadow: 0 0 5px #8a2be2, 0 0 10px #8a2be2, 0 0 15px #8a2be2, 0 0 20px #8a2be2;
-                box-shadow: 0 0 5px #8a2be2, 0 0 10px #8a2be2, 0 0 15px #8a2be2;
-            }
-            50% { 
-                text-shadow: 0 0 10px #8a2be2, 0 0 20px #8a2be2, 0 0 30px #8a2be2, 0 0 40px #8a2be2;
-                box-shadow: 0 0 10px #8a2be2, 0 0 20px #8a2be2, 0 0 30px #8a2be2;
-            }
-        }
-
+        /* Removed all neon effects and keyframes, simplified animations */
         @keyframes slideDown {
             from { transform: translateY(-100%); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
@@ -44,17 +34,22 @@
 
         @keyframes pulse {
             0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+            50% { transform: scale(1.02); }
             100% { transform: scale(1); }
         }
 
+        @keyframes countUp {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
         .container {
-            max-width: 100%;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
         }
 
-        /* Redesigned header with neon effect */
+        /* Simplified header design without neon effects */
         .header {
             text-align: center;
             margin-bottom: 30px;
@@ -63,42 +58,42 @@
 
         .header h1 {
             font-size: 2.5rem;
-            font-weight: 300;
-            color: #8a2be2;
-            animation: neonGlow 2s ease-in-out infinite alternate;
-            letter-spacing: 2px;
+            font-weight: 600;
+            color: #ffffff;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
         }
 
-        /* Added settings toggle button */
         .settings-toggle {
             position: absolute;
             top: 0;
             right: 20px;
-            background: rgba(138, 43, 226, 0.2);
-            border: 1px solid #8a2be2;
-            color: #8a2be2;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
             padding: 10px 15px;
-            border-radius: 25px;
+            border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s ease;
             font-size: 0.9rem;
+            backdrop-filter: blur(10px);
         }
 
         .settings-toggle:hover {
-            background: rgba(138, 43, 226, 0.4);
-            box-shadow: 0 0 15px rgba(138, 43, 226, 0.5);
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
         }
 
-        /* Added animated settings panel */
+        /* Simplified settings panel design */
         .settings-panel {
             position: fixed;
             top: 0;
             right: -400px;
             width: 350px;
             height: 100vh;
-            background: rgba(0, 0, 0, 0.95);
+            background: rgba(26, 26, 46, 0.95);
             backdrop-filter: blur(20px);
-            border-left: 2px solid #8a2be2;
+            border-left: 2px solid rgba(255, 255, 255, 0.1);
             padding: 30px 20px;
             transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 1000;
@@ -107,15 +102,15 @@
 
         .settings-panel.open {
             right: 0;
-            box-shadow: -10px 0 30px rgba(138, 43, 226, 0.3);
+            box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
         }
 
         .settings-header {
-            color: #8a2be2;
+            color: #ffffff;
             font-size: 1.5rem;
             margin-bottom: 30px;
             text-align: center;
-            border-bottom: 1px solid rgba(138, 43, 226, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             padding-bottom: 15px;
         }
 
@@ -132,8 +127,8 @@
 
         .setting-input, .setting-select {
             width: 100%;
-            background: rgba(138, 43, 226, 0.1);
-            border: 1px solid rgba(138, 43, 226, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             color: #ffffff;
             padding: 10px 15px;
             border-radius: 8px;
@@ -143,8 +138,8 @@
 
         .setting-input:focus, .setting-select:focus {
             outline: none;
-            border-color: #8a2be2;
-            box-shadow: 0 0 10px rgba(138, 43, 226, 0.3);
+            border-color: #4a90e2;
+            background: rgba(255, 255, 255, 0.15);
         }
 
         .close-settings {
@@ -153,7 +148,7 @@
             right: 20px;
             background: none;
             border: none;
-            color: #8a2be2;
+            color: #ffffff;
             font-size: 1.5rem;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -164,37 +159,25 @@
             color: #ff6b6b;
         }
 
+        /* Improved dashboard layout with better grid system */
         .dashboard {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 1fr 1fr;
             gap: 20px;
             margin-bottom: 30px;
             animation: fadeInUp 0.6s ease-out;
         }
 
-        /* Redesigned speedometer with black-purple theme and neon effects */
+        /* Redesigned speedometer container to fix overlapping issue */
         .speedometer-container {
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(15px);
             border-radius: 20px;
             padding: 30px;
             text-align: center;
-            border: 1px solid rgba(138, 43, 226, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             position: relative;
             overflow: hidden;
-        }
-
-        .speedometer-container::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: linear-gradient(45deg, #8a2be2, #4b0082, #8a2be2);
-            border-radius: 20px;
-            z-index: -1;
-            opacity: 0.3;
         }
 
         .speedometer {
@@ -204,21 +187,20 @@
             margin: 0 auto 20px;
         }
 
-        /* Removed rotating animation, added neon circle effect */
+        /* Fixed speedometer circle without neon effects */
         .speedometer-circle {
             width: 100%;
             height: 100%;
             border-radius: 50%;
-            background: conic-gradient(from 0deg, #8a2be2 0%, #4b0082 25%, #6a0dad 50%, #9370db 75%, #8a2be2 100%);
+            background: conic-gradient(from 0deg, #4a90e2 0%, #357abd 25%, #2c5aa0 50%, #1e3a8a 75%, #4a90e2 100%);
             padding: 8px;
             position: relative;
-            box-shadow: 0 0 30px rgba(138, 43, 226, 0.5);
         }
 
         .speedometer-inner {
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(26, 26, 46, 0.9);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -226,58 +208,67 @@
             flex-direction: column;
             backdrop-filter: blur(10px);
             position: relative;
-            border: 1px solid rgba(138, 43, 226, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        /* Redesigned needle with neon effect */
+        /* Repositioned needle to not overlap with speed text */
         .speedometer-needle {
             position: absolute;
-            top: 50%;
+            top: 20%;
             left: 50%;
-            width: 4px;
-            height: 70px;
-            background: linear-gradient(to top, #8a2be2, #ffffff);
+            width: 3px;
+            height: 60px;
+            background: linear-gradient(to top, #4a90e2, #ffffff);
             transform-origin: bottom center;
-            transform: translate(-50%, -100%) rotate(-90deg);
+            transform: translate(-50%, 0) rotate(-90deg);
             border-radius: 2px;
             transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 0 15px rgba(138, 43, 226, 0.8);
+            z-index: 5;
         }
 
         .speedometer-center {
             position: absolute;
-            top: 50%;
+            top: 20%;
             left: 50%;
-            width: 15px;
-            height: 15px;
-            background: radial-gradient(circle, #ffffff, #8a2be2);
+            width: 12px;
+            height: 12px;
+            background: radial-gradient(circle, #ffffff, #4a90e2);
             border-radius: 50%;
-            transform: translate(-50%, -50%);
+            transform: translate(-50%, 50%);
             z-index: 10;
-            box-shadow: 0 0 20px rgba(138, 43, 226, 0.8);
+        }
+
+        /* Repositioned speed value to bottom of speedometer */
+        .speed-display {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
         }
 
         .speed-value {
-            font-size: 3rem;
+            font-size: 2.5rem;
             font-weight: bold;
-            color: #8a2be2;
-            text-shadow: 0 0 20px rgba(138, 43, 226, 0.8);
+            color: #4a90e2;
             transition: all 0.3s ease;
+            display: block;
         }
 
         .speed-unit {
-            font-size: 1rem;
+            font-size: 0.9rem;
             opacity: 0.8;
             color: #ffffff;
+            margin-top: 5px;
         }
 
-        /* Redesigned stats with neon accents */
+        /* Added new stats container with better layout */
         .stats-container {
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(15px);
             border-radius: 20px;
             padding: 30px;
-            border: 1px solid rgba(138, 43, 226, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .stat-item {
@@ -286,35 +277,69 @@
             align-items: center;
             margin-bottom: 20px;
             padding: 15px;
-            background: rgba(138, 43, 226, 0.1);
+            background: rgba(255, 255, 255, 0.05);
             border-radius: 10px;
             transition: all 0.3s ease;
             cursor: pointer;
-            border: 1px solid rgba(138, 43, 226, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .stat-item:hover {
-            background: rgba(138, 43, 226, 0.2);
+            background: rgba(255, 255, 255, 0.1);
             transform: translateX(5px);
-            box-shadow: 0 0 15px rgba(138, 43, 226, 0.3);
         }
 
         .stat-label {
-            font-size: 1.1rem;
+            font-size: 1rem;
             opacity: 0.9;
             color: #ffffff;
         }
 
         .stat-value {
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             font-weight: bold;
-            color: #8a2be2;
+            color: #4a90e2;
             transition: all 0.4s ease;
         }
 
         .stat-value.updating {
-            transform: scale(1.1);
-            text-shadow: 0 0 15px rgba(138, 43, 226, 0.8);
+            animation: countUp 0.4s ease;
+        }
+
+        /* Added charts container */
+        .charts-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            height: 300px;
+        }
+
+        .chart-tabs {
+            display: flex;
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .chart-tab {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+
+        .chart-tab.active {
+            color: #4a90e2;
+            border-bottom-color: #4a90e2;
+        }
+
+        .chart-container {
+            height: 220px;
+            position: relative;
         }
 
         .controls {
@@ -322,14 +347,14 @@
             margin-bottom: 30px;
         }
 
-        /* Redesigned buttons with neon effects */
+        /* Simplified button design without neon effects */
         .btn {
-            background: rgba(0, 0, 0, 0.8);
-            border: 1px solid #8a2be2;
-            color: #8a2be2;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
             padding: 15px 30px;
             margin: 0 10px;
-            border-radius: 25px;
+            border-radius: 8px;
             font-size: 1rem;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -338,71 +363,38 @@
             overflow: hidden;
         }
 
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            background: rgba(138, 43, 226, 0.3);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-
-        .btn:active::before {
-            width: 300px;
-            height: 300px;
-        }
-
         .btn:hover {
-            background: rgba(138, 43, 226, 0.2);
-            box-shadow: 0 0 20px rgba(138, 43, 226, 0.5);
-            transform: translateY(-3px);
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
         }
 
         .btn.active {
-            background: rgba(138, 43, 226, 0.3);
+            background: rgba(74, 144, 226, 0.3);
+            border-color: #4a90e2;
             color: #ffffff;
-            animation: neonGlow 2s infinite;
         }
 
-        /* Redesigned map container with neon border */
+        /* Simplified map container */
         .map-container {
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(15px);
             border-radius: 20px;
             padding: 20px;
-            border: 1px solid rgba(138, 43, 226, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             height: 400px;
             transition: all 0.3s ease;
             position: relative;
         }
 
-        .map-container::before {
-            content: '';
-            position: absolute;
-            top: -1px;
-            left: -1px;
-            right: -1px;
-            bottom: -1px;
-            background: linear-gradient(45deg, #8a2be2, transparent, #8a2be2);
-            border-radius: 20px;
-            z-index: -1;
-            opacity: 0.5;
-        }
-
         .map-container:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(138, 43, 226, 0.3);
         }
 
         #map {
             width: 100%;
             height: 100%;
             border-radius: 15px;
-            border: 1px solid rgba(138, 43, 226, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .status {
@@ -410,8 +402,8 @@
             margin-bottom: 20px;
             padding: 15px;
             border-radius: 10px;
-            background: rgba(0, 0, 0, 0.8);
-            border: 1px solid rgba(138, 43, 226, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             transition: all 0.4s ease;
             color: #ffffff;
         }
@@ -419,18 +411,33 @@
         .status.error {
             border-color: #ff6b6b;
             color: #ff6b6b;
-            box-shadow: 0 0 15px rgba(255, 107, 107, 0.3);
+            background: rgba(255, 107, 107, 0.1);
         }
 
         .status.success {
             border-color: #00ff88;
             color: #00ff88;
-            box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+            background: rgba(0, 255, 136, 0.1);
+        }
+
+        /* Improved responsive design */
+        @media (max-width: 1200px) {
+            .dashboard {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .charts-container {
+                grid-column: span 2;
+            }
         }
 
         @media (max-width: 768px) {
             .dashboard {
                 grid-template-columns: 1fr;
+            }
+            
+            .charts-container {
+                grid-column: span 1;
             }
             
             .header h1 {
@@ -455,6 +462,33 @@
                 position: relative;
                 right: 0;
                 margin-top: 10px;
+            }
+
+            .btn {
+                padding: 12px 20px;
+                margin: 5px;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .speedometer-container,
+            .stats-container,
+            .charts-container {
+                padding: 20px;
+            }
+            
+            .speedometer {
+                width: 120px;
+                height: 120px;
+            }
+            
+            .speed-value {
+                font-size: 1.8rem;
             }
         }
     </style>
@@ -516,9 +550,12 @@
                         <div class="speedometer-inner">
                             <div class="speedometer-needle" id="speedNeedle"></div>
                             <div class="speedometer-center"></div>
-                            <div class="speed-value" id="speedValue">0</div>
-                            <div class="speed-unit" id="speedUnitDisplay">км/год</div>
                         </div>
+                    </div>
+                    <!-- Moved speed display outside of speedometer circle -->
+                    <div class="speed-display">
+                        <div class="speed-value" id="speedValue">0</div>
+                        <div class="speed-unit" id="speedUnitDisplay">км/год</div>
                     </div>
                 </div>
             </div>
@@ -541,12 +578,25 @@
                     <span class="stat-value" id="maxSpeed">0 км/год</span>
                 </div>
             </div>
+
+            <!-- Added charts container with tabs -->
+            <div class="charts-container">
+                <div class="chart-tabs">
+                    <button class="chart-tab active" onclick="switchChart('speed')">Швидкість</button>
+                    <button class="chart-tab" onclick="switchChart('distance')">Відстань</button>
+                </div>
+                <div class="chart-container">
+                    <canvas id="speedChart" style="display: block;"></canvas>
+                    <canvas id="distanceChart" style="display: none;"></canvas>
+                </div>
+            </div>
         </div>
 
         <div class="controls">
             <button class="btn" id="startBtn" onclick="startTracking()">Почати</button>
             <button class="btn" id="stopBtn" onclick="stopTracking()">Зупинити</button>
             <button class="btn" onclick="resetTracking()">Скинути</button>
+            <button class="btn" onclick="exportData()">Експорт</button>
         </div>
 
         <div class="map-container">
@@ -568,6 +618,12 @@
         let maxSpeed = 0;
         let lastPosition = null;
 
+        let speedChart, distanceChart;
+        let speedData = [];
+        let distanceData = [];
+        let timeLabels = [];
+        let currentChart = 'speed';
+
         let settings = {
             updateInterval: 1000,
             speedUnit: 'kmh',
@@ -582,6 +638,89 @@
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors'
             }).addTo(map);
+        }
+
+        function initCharts() {
+            const speedCtx = document.getElementById('speedChart').getContext('2d');
+            const distanceCtx = document.getElementById('distanceChart').getContext('2d');
+
+            speedChart = new Chart(speedCtx, {
+                type: 'line',
+                data: {
+                    labels: timeLabels,
+                    datasets: [{
+                        label: 'Швидкість',
+                        data: speedData,
+                        borderColor: '#4a90e2',
+                        backgroundColor: 'rgba(74, 144, 226, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#ffffff' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#ffffff' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        },
+                        y: {
+                            ticks: { color: '#ffffff' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        }
+                    }
+                }
+            });
+
+            distanceChart = new Chart(distanceCtx, {
+                type: 'line',
+                data: {
+                    labels: timeLabels,
+                    datasets: [{
+                        label: 'Відстань',
+                        data: distanceData,
+                        borderColor: '#00ff88',
+                        backgroundColor: 'rgba(0, 255, 136, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#ffffff' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#ffffff' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        },
+                        y: {
+                            ticks: { color: '#ffffff' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function switchChart(chartType) {
+            const tabs = document.querySelectorAll('.chart-tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+
+            document.getElementById('speedChart').style.display = chartType === 'speed' ? 'block' : 'none';
+            document.getElementById('distanceChart').style.display = chartType === 'distance' ? 'block' : 'none';
+            currentChart = chartType;
         }
 
         function toggleSettings() {
@@ -668,7 +807,6 @@
             isTracking = true;
             startTime = Date.now();
             document.getElementById('startBtn').classList.add('active');
-            document.getElementById('speedValue').parentElement.parentElement.classList.add('pulse');
             updateStatus('GPS активовано. Очікування сигналу...', 'success');
         }
 
@@ -680,7 +818,6 @@
             
             isTracking = false;
             document.getElementById('startBtn').classList.remove('active');
-            document.getElementById('speedValue').parentElement.parentElement.classList.remove('pulse');
             updateStatus('Відстеження зупинено', 'error');
         }
 
@@ -691,6 +828,12 @@
             maxSpeed = 0;
             path = [];
             lastPosition = null;
+            
+            speedData = [];
+            distanceData = [];
+            timeLabels = [];
+            if (speedChart) speedChart.update();
+            if (distanceChart) distanceChart.update();
             
             document.getElementById('speedValue').textContent = '0';
             document.getElementById('distance').textContent = '0.00 ' + getDistanceUnit();
@@ -709,6 +852,33 @@
             }
             
             updateStatus('Дані скинуто', 'success');
+        }
+
+        function exportData() {
+            if (speedData.length === 0) {
+                updateStatus('Немає даних для експорту', 'error');
+                return;
+            }
+
+            const data = {
+                timestamps: timeLabels,
+                speeds: speedData,
+                distances: distanceData,
+                path: path,
+                totalDistance: totalDistance,
+                maxSpeed: maxSpeed,
+                settings: settings
+            };
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `gps-data-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            updateStatus('Дані експортовано', 'success');
         }
 
         function handlePosition(position) {
@@ -735,7 +905,7 @@
             
             const maxDisplaySpeed = settings.speedUnit === 'ms' ? 50 : (settings.speedUnit === 'mph' ? 120 : 200);
             const needleRotation = Math.min((displaySpeed / maxDisplaySpeed) * 180, 180);
-            needleEl.style.transform = `translate(-50%, -100%) rotate(${needleRotation - 90}deg)`;
+            needleEl.style.transform = `translate(-50%, 0) rotate(${needleRotation - 90}deg)`;
             
             if (displaySpeed > maxSpeed) {
                 maxSpeed = displaySpeed;
@@ -757,6 +927,21 @@
                 distanceEl.textContent = convertedDistance.toFixed(2) + ' ' + getDistanceUnit();
                 setTimeout(() => distanceEl.classList.remove('updating'), 400);
             }
+
+            const currentTime = new Date().toLocaleTimeString();
+            timeLabels.push(currentTime);
+            speedData.push(displaySpeed);
+            distanceData.push(convertDistance(totalDistance));
+
+            // Keep only last 20 data points for performance
+            if (timeLabels.length > 20) {
+                timeLabels.shift();
+                speedData.shift();
+                distanceData.shift();
+            }
+
+            if (speedChart) speedChart.update('none');
+            if (distanceChart) distanceChart.update('none');
 
             lastPosition = currentPos;
             updateMap(currentPos);
@@ -788,7 +973,6 @@
             }
         }
 
-
         function updateMap(position) {
             if (marker) {
                 marker.setLatLng(position);
@@ -802,7 +986,7 @@
                     polyline.setLatLngs(path);
                 } else {
                     polyline = L.polyline(path, {
-                        color: '#8a2be2',
+                        color: '#4a90e2',
                         weight: 4,
                         opacity: 0.8
                     }).addTo(map);
@@ -850,6 +1034,7 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             initMap();
+            initCharts();
             
             document.getElementById('updateInterval').addEventListener('change', updateSettings);
             document.getElementById('speedUnit').addEventListener('change', updateSettings);
@@ -866,5 +1051,3 @@
     </script>
 </body>
 </html>
-
-
