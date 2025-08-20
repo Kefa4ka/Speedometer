@@ -1,156 +1,606 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-    <meta charset="UTF-8" />
-    <title>Спідометр</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Спідометр GPS</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        html, body {
-            margin: 0; padding: 0;
-            background: #000;
-            color: #fff;
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
+        * {
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
         }
-        h1 {
-            font-size: clamp(2rem, 5vw, 4rem);
-            margin: 0.5rem 0;
-            user-select: none;
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
         }
-        #speed {
-            font-size: clamp(3rem, 12vw, 10rem);
-            font-weight: bold;
-            margin: 0.5rem 0;
-            user-select: none;
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 20px;
         }
-        .settings {
-            margin-top: 2rem;
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 300;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .dashboard > *:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .speedometer-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .speedometer {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 20px;
+        }
+
+        .speedometer-circle {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, #ff6b6b 0%, #feca57 25%, #48dbfb 50%, #ff9ff3 75%, #ff6b6b 100%);
+            padding: 10px;
+            position: relative;
+            animation: rotate 20s linear infinite;
+        }
+
+        .speedometer-inner {
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
             display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
             align-items: center;
             justify-content: center;
-            user-select: none;
+            flex-direction: column;
+            backdrop-filter: blur(10px);
+            position: relative;
         }
-        label {
-            font-size: 1.2rem;
+
+        .speedometer-needle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 3px;
+            height: 60px;
+            background: linear-gradient(to top, #ff6b6b, #ffffff);
+            transform-origin: bottom center;
+            transform: translate(-50%, -100%) rotate(0deg);
+            border-radius: 2px;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
         }
-        input {
-            font-size: 1.2rem;
-            padding: 0.4rem;
-            width: 6rem;
-            text-align: center;
-            background: #111;
-            border: 1px solid #444;
-            color: #fff;
-            border-radius: 4px;
-            outline-offset: 2px;
-            outline-color: transparent;
-            transition: outline-color 0.2s ease-in-out;
+
+        .speedometer-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 12px;
+            height: 12px;
+            background: radial-gradient(circle, #ffffff, #ff6b6b);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
         }
-        input:focus {
-            outline-color: #0f0;
+
+        .speed-value {
+            font-size: 3rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
         }
-        button {
-            font-size: 1.2rem;
-            padding: 0.5rem 1rem;
-            background: #222;
-            border: 1px solid #555;
-            color: #fff;
+
+        .speed-unit {
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+
+        .stats-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            transition: all 0.3s ease;
             cursor: pointer;
-            border-radius: 4px;
-            transition: background 0.2s;
-            user-select: none;
         }
-        button:hover, button:focus {
-            background: #333;
-            outline: none;
+
+        .stat-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(5px);
+        }
+
+        .stat-label {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            transition: all 0.4s ease;
+        }
+
+        .stat-value.updating {
+            transform: scale(1.1);
+            color: #48dbfb;
+        }
+
+        .controls {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            margin: 0 10px;
+            border-radius: 50px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:active::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .btn.active {
+            background: rgba(76, 175, 80, 0.8);
+            animation: buttonPulse 2s infinite;
+        }
+
+        .map-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            height: 400px;
+            transition: all 0.3s ease;
+        }
+
+        .map-container:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+            border-radius: 15px;
+        }
+
+        .status {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            transition: all 0.4s ease;
+        }
+
+        .status.error {
+            background: rgba(244, 67, 54, 0.3);
+            animation: shake 0.5s ease-in-out;
+        }
+
+        .status.success {
+            background: rgba(76, 175, 80, 0.3);
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes buttonPulse {
+            0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .speedometer {
+                width: 150px;
+                height: 150px;
+            }
+            
+            .speed-value {
+                font-size: 2rem;
+            }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
     </style>
 </head>
 <body>
+    <div class="container">
+        <div class="header">
+            <h1>🚗 GPS Спідометр</h1>
+        </div>
 
-    <h1>Твоя швидкість</h1>
-    <div id="speed">0.00</div>
+        <div id="status" class="status">
+            Натисніть "Почати" для активації GPS
+        </div>
 
-    <div class="settings">
-        <label for="freq">Інтервал оновлення (мс):</label>
-        <input type="number" id="freq" value="400" step="100" min="100" />
-        <button onclick="applySettings()">Застосувати</button>
+        <div class="dashboard">
+            <div class="speedometer-container">
+                <div class="speedometer">
+                    <div class="speedometer-circle">
+                        <div class="speedometer-inner">
+                            <div class="speedometer-needle" id="speedNeedle"></div>
+                            <div class="speedometer-center"></div>
+                            <div class="speed-value" id="speedValue">0</div>
+                            <div class="speed-unit">км/год</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-container">
+                <div class="stat-item">
+                    <span class="stat-label">📏 Відстань</span>
+                    <span class="stat-value" id="distance">0.00 км</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">⏱️ Час в дорозі</span>
+                    <span class="stat-value" id="time">00:00:00</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">🏃 Середня швидкість</span>
+                    <span class="stat-value" id="avgSpeed">0 км/год</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">⚡ Макс. швидкість</span>
+                    <span class="stat-value" id="maxSpeed">0 км/год</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn" id="startBtn" onclick="startTracking()">Почати</button>
+            <button class="btn" id="stopBtn" onclick="stopTracking()">Зупинити</button>
+            <button class="btn" onclick="resetTracking()">Скинути</button>
+        </div>
+
+        <div class="map-container">
+            <div id="map"></div>
+        </div>
     </div>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        let prevLat, prevLng, prevTime;
-        let intervalID;
+        let map;
+        let watchId;
+        let isTracking = false;
+        let path = [];
+        let polyline;
+        let marker;
+        
+        let totalDistance = 0;
+        let startTime;
+        let maxSpeed = 0;
+        let lastPosition = null;
 
-        function getDistanceFromLatLonInMeters(lat1, lon1, lat2, lon2) {
-            const R = 6371000;
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a =
-                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                Math.sin(dLon / 2) * Math.sin(dLon / 2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            return R * c;
+        function initMap() {
+            map = L.map('map').setView([50.4501, 30.5234], 13); // Київ за замовчуванням
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
         }
 
-        function updateSpeed(position) {
-            const { latitude, longitude } = position.coords;
-            const currentTime = Date.now();
-
-            if (prevLat !== undefined && prevLng !== undefined && prevTime !== undefined) {
-                const distance = getDistanceFromLatLonInMeters(prevLat, prevLng, latitude, longitude);
-                const timeDiff = (currentTime - prevTime) / 1000;
-                const speed = (distance / timeDiff) * 3.6;
-
-                if (!isNaN(speed) && isFinite(speed)) {
-                    document.getElementById('speed').textContent = speed.toFixed(2);
-                } else {
-                    document.getElementById('speed').textContent = "0.00";
-                }
-            } else {
-                document.getElementById('speed').textContent = "0.00";
+        function startTracking() {
+            if (!navigator.geolocation) {
+                updateStatus('Геолокація не підтримується вашим браузером', 'error');
+                return;
             }
 
-            prevLat = latitude;
-            prevLng = longitude;
-            prevTime = currentTime;
+            const options = {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 1000
+            };
+
+            watchId = navigator.geolocation.watchPosition(
+                handlePosition,
+                handleError,
+                options
+            );
+
+            isTracking = true;
+            startTime = Date.now();
+            document.getElementById('startBtn').classList.add('active');
+            document.getElementById('speedValue').parentElement.parentElement.classList.add('pulse');
+            updateStatus('GPS активовано. Очікування сигналу...', 'success');
+        }
+
+        function stopTracking() {
+            if (watchId) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+            }
+            
+            isTracking = false;
+            document.getElementById('startBtn').classList.remove('active');
+            document.getElementById('speedValue').parentElement.parentElement.classList.remove('pulse');
+            updateStatus('Відстеження зупинено', 'error');
+        }
+
+        function resetTracking() {
+            stopTracking();
+            
+            totalDistance = 0;
+            maxSpeed = 0;
+            path = [];
+            lastPosition = null;
+            
+            document.getElementById('speedValue').textContent = '0';
+            document.getElementById('distance').textContent = '0.00 км';
+            document.getElementById('time').textContent = '00:00:00';
+            document.getElementById('avgSpeed').textContent = '0 км/год';
+            document.getElementById('maxSpeed').textContent = '0 км/год';
+            
+            if (polyline) {
+                map.removeLayer(polyline);
+                polyline = null;
+            }
+            
+            if (marker) {
+                map.removeLayer(marker);
+                marker = null;
+            }
+            
+            updateStatus('Дані скинуто', 'success');
+        }
+
+        function handlePosition(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            const speed = position.coords.speed || 0;
+            const accuracy = position.coords.accuracy;
+
+            if (accuracy > 50) {
+                return;
+            }
+
+            const speedKmh = Math.round(speed * 3.6);
+            
+            const speedValueEl = document.getElementById('speedValue');
+            const needleEl = document.getElementById('speedNeedle');
+            
+            speedValueEl.style.transform = 'scale(1.1)';
+            setTimeout(() => {
+                speedValueEl.textContent = speedKmh;
+                speedValueEl.style.transform = 'scale(1)';
+            }, 150);
+            
+            const needleRotation = Math.min(speedKmh * 0.9, 180);
+            needleEl.style.transform = `translate(-50%, -100%) rotate(${needleRotation - 90}deg)`;
+            
+            if (speedKmh > maxSpeed) {
+                maxSpeed = speedKmh;
+                const maxSpeedEl = document.getElementById('maxSpeed');
+                maxSpeedEl.classList.add('updating');
+                maxSpeedEl.textContent = maxSpeed + ' км/год';
+                setTimeout(() => maxSpeedEl.classList.remove('updating'), 400);
+            }
+
+            const currentPos = [lat, lng];
+            path.push(currentPos);
+
+            if (lastPosition && speedKmh > 1) {
+                const distance = calculateDistance(lastPosition, currentPos);
+                totalDistance += distance;
+                const distanceEl = document.getElementById('distance');
+                distanceEl.classList.add('updating');
+                distanceEl.textContent = totalDistance.toFixed(2) + ' км';
+                setTimeout(() => distanceEl.classList.remove('updating'), 400);
+            }
+
+            lastPosition = currentPos;
+
+            updateMap(currentPos);
+            
+            updateTimeAndAvgSpeed();
+            
+            updateStatus(`GPS сигнал отримано (точність: ${Math.round(accuracy)}м)`, 'success');
         }
 
         function handleError(error) {
-            console.error('Помилка геолокації:', error);
-            document.getElementById('speed').textContent = "0.00";
+            let message = 'Помилка геолокації: ';
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    message += 'Доступ до геолокації заборонено';
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    message += 'Інформація про місцезнаходження недоступна';
+                    break;
+                case error.TIMEOUT:
+                    message += 'Час очікування вичерпано';
+                    break;
+                default:
+                    message += 'Невідома помилка';
+                    break;
+            }
+            updateStatus(message, 'error');
         }
 
-        function startTracking(frequency = 400) {
-            if (intervalID) clearInterval(intervalID);
+        function updateMap(position) {
+            if (marker) {
+                marker.setLatLng(position);
+            } else {
+                marker = L.marker(position).addTo(map);
+                map.setView(position, 16);
+            }
 
-            intervalID = setInterval(() => {
-                navigator.geolocation.getCurrentPosition(updateSpeed, handleError, {
-                    enableHighAccuracy: true,
-                    maximumAge: 0,
-                    timeout: 1000
-                });
-            }, frequency);
+            if (path.length > 1) {
+                if (polyline) {
+                    polyline.setLatLngs(path);
+                } else {
+                    polyline = L.polyline(path, {
+                        color: '#ff6b6b',
+                        weight: 4,
+                        opacity: 0.8
+                    }).addTo(map);
+                }
+            }
+
+            map.panTo(position);
         }
 
-        function applySettings() {
-            const freqInput = document.getElementById('freq');
-            let freq = parseInt(freqInput.value);
-            if (isNaN(freq) || freq < 100) freq = 100;
-            startTracking(freq);
+        function calculateDistance(pos1, pos2) {
+            const R = 6371; // Радіус Землі в км
+            const dLat = (pos2[0] - pos1[0]) * Math.PI / 180;
+            const dLng = (pos2[1] - pos1[1]) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                    Math.cos(pos1[0] * Math.PI / 180) * Math.cos(pos2[0] * Math.PI / 180) *
+                    Math.sin(dLng/2) * Math.sin(dLng/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
         }
 
-        startTracking(400);
+        function updateTimeAndAvgSpeed() {
+            if (!startTime) return;
+            
+            const elapsed = Date.now() - startTime;
+            const hours = Math.floor(elapsed / 3600000);
+            const minutes = Math.floor((elapsed % 3600000) / 60000);
+            const seconds = Math.floor((elapsed % 60000) / 1000);
+            
+            const timeStr = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            document.getElementById('time').textContent = timeStr;
+            
+            const avgSpeed = totalDistance > 0 ? (totalDistance / (elapsed / 3600000)) : 0;
+            const avgSpeedEl = document.getElementById('avgSpeed');
+            const newAvgSpeed = Math.round(avgSpeed) + ' км/год';
+            if (avgSpeedEl.textContent !== newAvgSpeed) {
+                avgSpeedEl.classList.add('updating');
+                avgSpeedEl.textContent = newAvgSpeed;
+                setTimeout(() => avgSpeedEl.classList.remove('updating'), 400);
+            }
+        }
+
+        function updateStatus(message, type = '') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = 'status ' + type;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initMap();
+            
+            setInterval(() => {
+                if (isTracking) {
+                    updateTimeAndAvgSpeed();
+                }
+            }, 1000);
+        });
     </script>
-
 </body>
 </html>
+
