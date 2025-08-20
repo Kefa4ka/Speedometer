@@ -14,9 +14,38 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0033 50%, #000000 100%);
             min-height: 100vh;
-            color: white;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        /* Added neon glow keyframes and effects */
+        @keyframes neonGlow {
+            0%, 100% { 
+                text-shadow: 0 0 5px #8a2be2, 0 0 10px #8a2be2, 0 0 15px #8a2be2, 0 0 20px #8a2be2;
+                box-shadow: 0 0 5px #8a2be2, 0 0 10px #8a2be2, 0 0 15px #8a2be2;
+            }
+            50% { 
+                text-shadow: 0 0 10px #8a2be2, 0 0 20px #8a2be2, 0 0 30px #8a2be2, 0 0 40px #8a2be2;
+                box-shadow: 0 0 10px #8a2be2, 0 0 20px #8a2be2, 0 0 30px #8a2be2;
+            }
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
 
         .container {
@@ -25,15 +54,114 @@
             padding: 20px;
         }
 
+        /* Redesigned header with neon effect */
         .header {
             text-align: center;
             margin-bottom: 30px;
+            position: relative;
         }
 
         .header h1 {
             font-size: 2.5rem;
             font-weight: 300;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            color: #8a2be2;
+            animation: neonGlow 2s ease-in-out infinite alternate;
+            letter-spacing: 2px;
+        }
+
+        /* Added settings toggle button */
+        .settings-toggle {
+            position: absolute;
+            top: 0;
+            right: 20px;
+            background: rgba(138, 43, 226, 0.2);
+            border: 1px solid #8a2be2;
+            color: #8a2be2;
+            padding: 10px 15px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .settings-toggle:hover {
+            background: rgba(138, 43, 226, 0.4);
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.5);
+        }
+
+        /* Added animated settings panel */
+        .settings-panel {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 350px;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(20px);
+            border-left: 2px solid #8a2be2;
+            padding: 30px 20px;
+            transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .settings-panel.open {
+            right: 0;
+            box-shadow: -10px 0 30px rgba(138, 43, 226, 0.3);
+        }
+
+        .settings-header {
+            color: #8a2be2;
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            text-align: center;
+            border-bottom: 1px solid rgba(138, 43, 226, 0.3);
+            padding-bottom: 15px;
+        }
+
+        .setting-group {
+            margin-bottom: 25px;
+        }
+
+        .setting-label {
+            display: block;
+            color: #ffffff;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .setting-input, .setting-select {
+            width: 100%;
+            background: rgba(138, 43, 226, 0.1);
+            border: 1px solid rgba(138, 43, 226, 0.3);
+            color: #ffffff;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .setting-input:focus, .setting-select:focus {
+            outline: none;
+            border-color: #8a2be2;
+            box-shadow: 0 0 10px rgba(138, 43, 226, 0.3);
+        }
+
+        .close-settings {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: #8a2be2;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .close-settings:hover {
+            transform: rotate(90deg);
+            color: #ff6b6b;
         }
 
         .dashboard {
@@ -44,18 +172,29 @@
             animation: fadeInUp 0.6s ease-out;
         }
 
-        .dashboard > *:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-
+        /* Redesigned speedometer with black-purple theme and neon effects */
         .speedometer-container {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(15px);
             border-radius: 20px;
             padding: 30px;
             text-align: center;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
+            border: 1px solid rgba(138, 43, 226, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .speedometer-container::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #8a2be2, #4b0082, #8a2be2);
+            border-radius: 20px;
+            z-index: -1;
+            opacity: 0.3;
         }
 
         .speedometer {
@@ -65,20 +204,21 @@
             margin: 0 auto 20px;
         }
 
+        /* Removed rotating animation, added neon circle effect */
         .speedometer-circle {
             width: 100%;
             height: 100%;
             border-radius: 50%;
-            background: conic-gradient(from 0deg, #ff6b6b 0%, #feca57 25%, #48dbfb 50%, #ff9ff3 75%, #ff6b6b 100%);
-            padding: 10px;
+            background: conic-gradient(from 0deg, #8a2be2 0%, #4b0082 25%, #6a0dad 50%, #9370db 75%, #8a2be2 100%);
+            padding: 8px;
             position: relative;
-            animation: rotate 20s linear infinite;
+            box-shadow: 0 0 30px rgba(138, 43, 226, 0.5);
         }
 
         .speedometer-inner {
             width: 100%;
             height: 100%;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.9);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -86,54 +226,58 @@
             flex-direction: column;
             backdrop-filter: blur(10px);
             position: relative;
+            border: 1px solid rgba(138, 43, 226, 0.2);
         }
 
+        /* Redesigned needle with neon effect */
         .speedometer-needle {
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 3px;
-            height: 60px;
-            background: linear-gradient(to top, #ff6b6b, #ffffff);
+            width: 4px;
+            height: 70px;
+            background: linear-gradient(to top, #8a2be2, #ffffff);
             transform-origin: bottom center;
-            transform: translate(-50%, -100%) rotate(0deg);
+            transform: translate(-50%, -100%) rotate(-90deg);
             border-radius: 2px;
-            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.8);
         }
 
         .speedometer-center {
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 12px;
-            height: 12px;
-            background: radial-gradient(circle, #ffffff, #ff6b6b);
+            width: 15px;
+            height: 15px;
+            background: radial-gradient(circle, #ffffff, #8a2be2);
             border-radius: 50%;
             transform: translate(-50%, -50%);
             z-index: 10;
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 20px rgba(138, 43, 226, 0.8);
         }
 
         .speed-value {
             font-size: 3rem;
             font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            color: #8a2be2;
+            text-shadow: 0 0 20px rgba(138, 43, 226, 0.8);
             transition: all 0.3s ease;
         }
 
         .speed-unit {
             font-size: 1rem;
             opacity: 0.8;
+            color: #ffffff;
         }
 
+        /* Redesigned stats with neon accents */
         .stats-container {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(15px);
             border-radius: 20px;
             padding: 30px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
+            border: 1px solid rgba(138, 43, 226, 0.3);
         }
 
         .stat-item {
@@ -142,31 +286,35 @@
             align-items: center;
             margin-bottom: 20px;
             padding: 15px;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(138, 43, 226, 0.1);
             border-radius: 10px;
             transition: all 0.3s ease;
             cursor: pointer;
+            border: 1px solid rgba(138, 43, 226, 0.2);
         }
 
         .stat-item:hover {
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(138, 43, 226, 0.2);
             transform: translateX(5px);
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.3);
         }
 
         .stat-label {
             font-size: 1.1rem;
             opacity: 0.9;
+            color: #ffffff;
         }
 
         .stat-value {
             font-size: 1.5rem;
             font-weight: bold;
+            color: #8a2be2;
             transition: all 0.4s ease;
         }
 
         .stat-value.updating {
             transform: scale(1.1);
-            color: #48dbfb;
+            text-shadow: 0 0 15px rgba(138, 43, 226, 0.8);
         }
 
         .controls {
@@ -174,18 +322,18 @@
             margin-bottom: 30px;
         }
 
+        /* Redesigned buttons with neon effects */
         .btn {
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            color: white;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #8a2be2;
+            color: #8a2be2;
             padding: 15px 30px;
             margin: 0 10px;
-            border-radius: 50px;
+            border-radius: 25px;
             font-size: 1rem;
             cursor: pointer;
             transition: all 0.3s ease;
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.3);
             position: relative;
             overflow: hidden;
         }
@@ -197,7 +345,7 @@
             left: 50%;
             width: 0;
             height: 0;
-            background: rgba(255, 255, 255, 0.3);
+            background: rgba(138, 43, 226, 0.3);
             border-radius: 50%;
             transform: translate(-50%, -50%);
             transition: width 0.6s, height 0.6s;
@@ -209,82 +357,75 @@
         }
 
         .btn:hover {
-            background: rgba(255, 255, 255, 0.3);
+            background: rgba(138, 43, 226, 0.2);
+            box-shadow: 0 0 20px rgba(138, 43, 226, 0.5);
             transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         }
 
         .btn.active {
-            background: rgba(76, 175, 80, 0.8);
-            animation: buttonPulse 2s infinite;
+            background: rgba(138, 43, 226, 0.3);
+            color: #ffffff;
+            animation: neonGlow 2s infinite;
         }
 
+        /* Redesigned map container with neon border */
         .map-container {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(15px);
             border-radius: 20px;
             padding: 20px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
+            border: 1px solid rgba(138, 43, 226, 0.3);
             height: 400px;
             transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .map-container::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: -1px;
+            right: -1px;
+            bottom: -1px;
+            background: linear-gradient(45deg, #8a2be2, transparent, #8a2be2);
+            border-radius: 20px;
+            z-index: -1;
+            opacity: 0.5;
         }
 
         .map-container:hover {
             transform: translateY(-2px);
-            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+            box-shadow: 0 10px 30px rgba(138, 43, 226, 0.3);
         }
 
         #map {
             width: 100%;
             height: 100%;
             border-radius: 15px;
+            border: 1px solid rgba(138, 43, 226, 0.2);
         }
 
         .status {
             text-align: center;
             margin-bottom: 20px;
-            padding: 10px;
+            padding: 15px;
             border-radius: 10px;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(138, 43, 226, 0.3);
             transition: all 0.4s ease;
+            color: #ffffff;
         }
 
         .status.error {
-            background: rgba(244, 67, 54, 0.3);
-            animation: shake 0.5s ease-in-out;
+            border-color: #ff6b6b;
+            color: #ff6b6b;
+            box-shadow: 0 0 15px rgba(255, 107, 107, 0.3);
         }
 
         .status.success {
-            background: rgba(76, 175, 80, 0.3);
-            animation: slideIn 0.5s ease-out;
-        }
-
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        @keyframes buttonPulse {
-            0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-            20%, 40%, 60%, 80% { transform: translateX(5px); }
-        }
-
-        @keyframes slideIn {
-            from { transform: translateY(-20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        @keyframes fadeInUp {
-            from { transform: translateY(30px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+            border-color: #00ff88;
+            color: #00ff88;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
         }
 
         @media (max-width: 768px) {
@@ -304,23 +445,64 @@
             .speed-value {
                 font-size: 2rem;
             }
-        }
 
-        .pulse {
-            animation: pulse 2s infinite;
-        }
+            .settings-panel {
+                width: 100%;
+                right: -100%;
+            }
 
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+            .settings-toggle {
+                position: relative;
+                right: 0;
+                margin-top: 10px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🚗 GPS Спідометр</h1>
+            <h1>GPS Спідометр</h1>
+            <button class="settings-toggle" onclick="toggleSettings()">⚙️ Налаштування</button>
+        </div>
+
+        <!-- Added animated settings panel -->
+        <div class="settings-panel" id="settingsPanel">
+            <button class="close-settings" onclick="toggleSettings()">×</button>
+            <div class="settings-header">Налаштування</div>
+            
+            <div class="setting-group">
+                <label class="setting-label">Частота оновлення GPS (мс)</label>
+                <input type="number" class="setting-input" id="updateInterval" value="1000" min="500" max="5000" step="100">
+            </div>
+            
+            <div class="setting-group">
+                <label class="setting-label">Одиниці швидкості</label>
+                <select class="setting-select" id="speedUnit">
+                    <option value="kmh">км/год</option>
+                    <option value="mph">миль/год</option>
+                    <option value="ms">м/с</option>
+                </select>
+            </div>
+            
+            <div class="setting-group">
+                <label class="setting-label">Одиниці відстані</label>
+                <select class="setting-select" id="distanceUnit">
+                    <option value="km">Кілометри</option>
+                    <option value="miles">Милі</option>
+                    <option value="meters">Метри</option>
+                </select>
+            </div>
+            
+            <div class="setting-group">
+                <label class="setting-label">Точність GPS (м)</label>
+                <input type="number" class="setting-input" id="gpsAccuracy" value="50" min="10" max="200" step="10">
+            </div>
+            
+            <div class="setting-group">
+                <label class="setting-label">Мінімальна швидкість для запису (км/год)</label>
+                <input type="number" class="setting-input" id="minSpeed" value="1" min="0" max="10" step="0.5">
+            </div>
         </div>
 
         <div id="status" class="status">
@@ -335,7 +517,7 @@
                             <div class="speedometer-needle" id="speedNeedle"></div>
                             <div class="speedometer-center"></div>
                             <div class="speed-value" id="speedValue">0</div>
-                            <div class="speed-unit">км/год</div>
+                            <div class="speed-unit" id="speedUnitDisplay">км/год</div>
                         </div>
                     </div>
                 </div>
@@ -386,12 +568,81 @@
         let maxSpeed = 0;
         let lastPosition = null;
 
+        let settings = {
+            updateInterval: 1000,
+            speedUnit: 'kmh',
+            distanceUnit: 'km',
+            gpsAccuracy: 50,
+            minSpeed: 1
+        };
+
         function initMap() {
-            map = L.map('map').setView([50.4501, 30.5234], 13); // Київ за замовчуванням
+            map = L.map('map').setView([50.4501, 30.5234], 13);
             
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors'
             }).addTo(map);
+        }
+
+        function toggleSettings() {
+            const panel = document.getElementById('settingsPanel');
+            panel.classList.toggle('open');
+        }
+
+        function updateSettings() {
+            settings.updateInterval = parseInt(document.getElementById('updateInterval').value);
+            settings.speedUnit = document.getElementById('speedUnit').value;
+            settings.distanceUnit = document.getElementById('distanceUnit').value;
+            settings.gpsAccuracy = parseInt(document.getElementById('gpsAccuracy').value);
+            settings.minSpeed = parseFloat(document.getElementById('minSpeed').value);
+            
+            updateSpeedUnitDisplay();
+        }
+
+        function updateSpeedUnitDisplay() {
+            const unitDisplay = document.getElementById('speedUnitDisplay');
+            const units = {
+                'kmh': 'км/год',
+                'mph': 'миль/год',
+                'ms': 'м/с'
+            };
+            unitDisplay.textContent = units[settings.speedUnit];
+        }
+
+        function convertSpeed(speedMs) {
+            switch(settings.speedUnit) {
+                case 'kmh': return speedMs * 3.6;
+                case 'mph': return speedMs * 2.237;
+                case 'ms': return speedMs;
+                default: return speedMs * 3.6;
+            }
+        }
+
+        function convertDistance(distanceKm) {
+            switch(settings.distanceUnit) {
+                case 'km': return distanceKm;
+                case 'miles': return distanceKm * 0.621371;
+                case 'meters': return distanceKm * 1000;
+                default: return distanceKm;
+            }
+        }
+
+        function getDistanceUnit() {
+            const units = {
+                'km': 'км',
+                'miles': 'миль',
+                'meters': 'м'
+            };
+            return units[settings.distanceUnit];
+        }
+
+        function getSpeedUnit() {
+            const units = {
+                'kmh': 'км/год',
+                'mph': 'миль/год',
+                'ms': 'м/с'
+            };
+            return units[settings.speedUnit];
         }
 
         function startTracking() {
@@ -400,10 +651,12 @@
                 return;
             }
 
+            updateSettings();
+
             const options = {
                 enableHighAccuracy: true,
                 timeout: 10000,
-                maximumAge: 1000
+                maximumAge: settings.updateInterval
             };
 
             watchId = navigator.geolocation.watchPosition(
@@ -440,10 +693,10 @@
             lastPosition = null;
             
             document.getElementById('speedValue').textContent = '0';
-            document.getElementById('distance').textContent = '0.00 км';
+            document.getElementById('distance').textContent = '0.00 ' + getDistanceUnit();
             document.getElementById('time').textContent = '00:00:00';
-            document.getElementById('avgSpeed').textContent = '0 км/год';
-            document.getElementById('maxSpeed').textContent = '0 км/год';
+            document.getElementById('avgSpeed').textContent = '0 ' + getSpeedUnit();
+            document.getElementById('maxSpeed').textContent = '0 ' + getSpeedUnit();
             
             if (polyline) {
                 map.removeLayer(polyline);
@@ -464,51 +717,110 @@
             const speed = position.coords.speed || 0;
             const accuracy = position.coords.accuracy;
 
-            if (accuracy > 50) {
+            if (accuracy > settings.gpsAccuracy) {
                 return;
             }
 
-            const speedKmh = Math.round(speed * 3.6);
+            const convertedSpeed = convertSpeed(speed);
+            const displaySpeed = Math.round(convertedSpeed);
             
             const speedValueEl = document.getElementById('speedValue');
             const needleEl = document.getElementById('speedNeedle');
             
             speedValueEl.style.transform = 'scale(1.1)';
             setTimeout(() => {
-                speedValueEl.textContent = speedKmh;
+                speedValueEl.textContent = displaySpeed;
                 speedValueEl.style.transform = 'scale(1)';
             }, 150);
             
-            const needleRotation = Math.min(speedKmh * 0.9, 180);
+            const maxDisplaySpeed = settings.speedUnit === 'ms' ? 50 : (settings.speedUnit === 'mph' ? 120 : 200);
+            const needleRotation = Math.min((displaySpeed / maxDisplaySpeed) * 180, 180);
             needleEl.style.transform = `translate(-50%, -100%) rotate(${needleRotation - 90}deg)`;
             
-            if (speedKmh > maxSpeed) {
-                maxSpeed = speedKmh;
+            if (displaySpeed > maxSpeed) {
+                maxSpeed = displaySpeed;
                 const maxSpeedEl = document.getElementById('maxSpeed');
                 maxSpeedEl.classList.add('updating');
-                maxSpeedEl.textContent = maxSpeed + ' км/год';
+                maxSpeedEl.textContent = maxSpeed + ' ' + getSpeedUnit();
                 setTimeout(() => maxSpeedEl.classList.remove('updating'), 400);
             }
 
             const currentPos = [lat, lng];
             path.push(currentPos);
 
-            if (lastPosition && speedKmh > 1) {
+            if (lastPosition && convertSpeed(speed) > settings.minSpeed) {
                 const distance = calculateDistance(lastPosition, currentPos);
                 totalDistance += distance;
+                const convertedDistance = convertDistance(totalDistance);
                 const distanceEl = document.getElementById('distance');
                 distanceEl.classList.add('updating');
-                distanceEl.textContent = totalDistance.toFixed(2) + ' км';
+                distanceEl.textContent = convertedDistance.toFixed(2) + ' ' + getDistanceUnit();
                 setTimeout(() => distanceEl.classList.remove('updating'), 400);
             }
 
             lastPosition = currentPos;
-
             updateMap(currentPos);
-            
             updateTimeAndAvgSpeed();
             
             updateStatus(`GPS сигнал отримано (точність: ${Math.round(accuracy)}м)`, 'success');
+        }
+
+
+        function updateTimeAndAvgSpeed() {
+            if (!startTime) return;
+            
+            const elapsed = Date.now() - startTime;
+            const hours = Math.floor(elapsed / 3600000);
+            const minutes = Math.floor((elapsed % 3600000) / 60000);
+            const seconds = Math.floor((elapsed % 60000) / 1000);
+            
+            const timeStr = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            document.getElementById('time').textContent = timeStr;
+            
+            const avgSpeed = totalDistance > 0 ? (totalDistance / (elapsed / 3600000)) : 0;
+            const convertedAvgSpeed = convertDistance(avgSpeed);
+            const avgSpeedEl = document.getElementById('avgSpeed');
+            const newAvgSpeed = Math.round(convertedAvgSpeed) + ' ' + getSpeedUnit();
+            if (avgSpeedEl.textContent !== newAvgSpeed) {
+                avgSpeedEl.classList.add('updating');
+                avgSpeedEl.textContent = newAvgSpeed;
+                setTimeout(() => avgSpeedEl.classList.remove('updating'), 400);
+            }
+        }
+
+
+        function updateMap(position) {
+            if (marker) {
+                marker.setLatLng(position);
+            } else {
+                marker = L.marker(position).addTo(map);
+                map.setView(position, 16);
+            }
+
+            if (path.length > 1) {
+                if (polyline) {
+                    polyline.setLatLngs(path);
+                } else {
+                    polyline = L.polyline(path, {
+                        color: '#8a2be2',
+                        weight: 4,
+                        opacity: 0.8
+                    }).addTo(map);
+                }
+            }
+
+            map.panTo(position);
+        }
+
+        function calculateDistance(pos1, pos2) {
+            const R = 6371;
+            const dLat = (pos2[0] - pos1[0]) * Math.PI / 180;
+            const dLng = (pos2[1] - pos1[1]) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                    Math.cos(pos1[0] * Math.PI / 180) * Math.cos(pos2[0] * Math.PI / 180) *
+                    Math.sin(dLng/2) * Math.sin(dLng/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
         }
 
         function handleError(error) {
@@ -530,61 +842,6 @@
             updateStatus(message, 'error');
         }
 
-        function updateMap(position) {
-            if (marker) {
-                marker.setLatLng(position);
-            } else {
-                marker = L.marker(position).addTo(map);
-                map.setView(position, 16);
-            }
-
-            if (path.length > 1) {
-                if (polyline) {
-                    polyline.setLatLngs(path);
-                } else {
-                    polyline = L.polyline(path, {
-                        color: '#ff6b6b',
-                        weight: 4,
-                        opacity: 0.8
-                    }).addTo(map);
-                }
-            }
-
-            map.panTo(position);
-        }
-
-        function calculateDistance(pos1, pos2) {
-            const R = 6371; // Радіус Землі в км
-            const dLat = (pos2[0] - pos1[0]) * Math.PI / 180;
-            const dLng = (pos2[1] - pos1[1]) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                    Math.cos(pos1[0] * Math.PI / 180) * Math.cos(pos2[0] * Math.PI / 180) *
-                    Math.sin(dLng/2) * Math.sin(dLng/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            return R * c;
-        }
-
-        function updateTimeAndAvgSpeed() {
-            if (!startTime) return;
-            
-            const elapsed = Date.now() - startTime;
-            const hours = Math.floor(elapsed / 3600000);
-            const minutes = Math.floor((elapsed % 3600000) / 60000);
-            const seconds = Math.floor((elapsed % 60000) / 1000);
-            
-            const timeStr = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            document.getElementById('time').textContent = timeStr;
-            
-            const avgSpeed = totalDistance > 0 ? (totalDistance / (elapsed / 3600000)) : 0;
-            const avgSpeedEl = document.getElementById('avgSpeed');
-            const newAvgSpeed = Math.round(avgSpeed) + ' км/год';
-            if (avgSpeedEl.textContent !== newAvgSpeed) {
-                avgSpeedEl.classList.add('updating');
-                avgSpeedEl.textContent = newAvgSpeed;
-                setTimeout(() => avgSpeedEl.classList.remove('updating'), 400);
-            }
-        }
-
         function updateStatus(message, type = '') {
             const statusEl = document.getElementById('status');
             statusEl.textContent = message;
@@ -593,6 +850,12 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             initMap();
+            
+            document.getElementById('updateInterval').addEventListener('change', updateSettings);
+            document.getElementById('speedUnit').addEventListener('change', updateSettings);
+            document.getElementById('distanceUnit').addEventListener('change', updateSettings);
+            document.getElementById('gpsAccuracy').addEventListener('change', updateSettings);
+            document.getElementById('minSpeed').addEventListener('change', updateSettings);
             
             setInterval(() => {
                 if (isTracking) {
@@ -603,4 +866,5 @@
     </script>
 </body>
 </html>
+
 
