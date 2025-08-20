@@ -187,7 +187,7 @@
             margin: 0 auto 20px;
         }
 
-        /* Fixed speedometer circle without neon effects */
+        /* Simplified speedometer circle - removed needle styles */
         .speedometer-circle {
             width: 100%;
             height: 100%;
@@ -211,44 +211,13 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        /* Repositioned needle to not overlap with speed text */
-        .speedometer-needle {
-            position: absolute;
-            top: 20%;
-            left: 50%;
-            width: 3px;
-            height: 60px;
-            background: linear-gradient(to top, #4a90e2, #ffffff);
-            transform-origin: bottom center;
-            transform: translate(-50%, 0) rotate(-90deg);
-            border-radius: 2px;
-            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 5;
-        }
-
-        .speedometer-center {
-            position: absolute;
-            top: 20%;
-            left: 50%;
-            width: 12px;
-            height: 12px;
-            background: radial-gradient(circle, #ffffff, #4a90e2);
-            border-radius: 50%;
-            transform: translate(-50%, 50%);
-            z-index: 10;
-        }
-
-        /* Repositioned speed value to bottom of speedometer */
+        /* Centered speed display inside speedometer */
         .speed-display {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
             text-align: center;
         }
 
         .speed-value {
-            font-size: 2.5rem;
+            font-size: 3rem;
             font-weight: bold;
             color: #4a90e2;
             transition: all 0.3s ease;
@@ -256,7 +225,7 @@
         }
 
         .speed-unit {
-            font-size: 0.9rem;
+            font-size: 1rem;
             opacity: 0.8;
             color: #ffffff;
             margin-top: 5px;
@@ -304,47 +273,6 @@
 
         .stat-value.updating {
             animation: countUp 0.4s ease;
-        }
-
-        /* Added charts container */
-        .charts-container {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(15px);
-            border-radius: 20px;
-            padding: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            height: 300px;
-        }
-
-        .chart-tabs {
-            display: flex;
-            margin-bottom: 15px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .chart-tab {
-            padding: 10px 20px;
-            background: none;
-            border: none;
-            color: rgba(255, 255, 255, 0.6);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border-bottom: 2px solid transparent;
-        }
-
-        .chart-tab.active {
-            color: #4a90e2;
-            border-bottom-color: #4a90e2;
-        }
-
-        .chart-container {
-            height: 220px;
-            position: relative;
-        }
-
-        .controls {
-            text-align: center;
-            margin-bottom: 30px;
         }
 
         /* Simplified button design without neon effects */
@@ -425,19 +353,11 @@
             .dashboard {
                 grid-template-columns: 1fr 1fr;
             }
-            
-            .charts-container {
-                grid-column: span 2;
-            }
         }
 
         @media (max-width: 768px) {
             .dashboard {
                 grid-template-columns: 1fr;
-            }
-            
-            .charts-container {
-                grid-column: span 1;
             }
             
             .header h1 {
@@ -477,8 +397,7 @@
             }
             
             .speedometer-container,
-            .stats-container,
-            .charts-container {
+            .stats-container {
                 padding: 20px;
             }
             
@@ -548,14 +467,12 @@
                 <div class="speedometer">
                     <div class="speedometer-circle">
                         <div class="speedometer-inner">
-                            <div class="speedometer-needle" id="speedNeedle"></div>
-                            <div class="speedometer-center"></div>
+                            <!-- Centered speed display inside speedometer -->
+                            <div class="speed-display">
+                                <div class="speed-value" id="speedValue">0</div>
+                                <div class="speed-unit" id="speedUnitDisplay">км/год</div>
+                            </div>
                         </div>
-                    </div>
-                    <!-- Moved speed display outside of speedometer circle -->
-                    <div class="speed-display">
-                        <div class="speed-value" id="speedValue">0</div>
-                        <div class="speed-unit" id="speedUnitDisplay">км/год</div>
                     </div>
                 </div>
             </div>
@@ -576,18 +493,6 @@
                 <div class="stat-item">
                     <span class="stat-label">⚡ Макс. швидкість</span>
                     <span class="stat-value" id="maxSpeed">0 км/год</span>
-                </div>
-            </div>
-
-            <!-- Added charts container with tabs -->
-            <div class="charts-container">
-                <div class="chart-tabs">
-                    <button class="chart-tab active" onclick="switchChart('speed')">Швидкість</button>
-                    <button class="chart-tab" onclick="switchChart('distance')">Відстань</button>
-                </div>
-                <div class="chart-container">
-                    <canvas id="speedChart" style="display: block;"></canvas>
-                    <canvas id="distanceChart" style="display: none;"></canvas>
                 </div>
             </div>
         </div>
@@ -618,12 +523,6 @@
         let maxSpeed = 0;
         let lastPosition = null;
 
-        let speedChart, distanceChart;
-        let speedData = [];
-        let distanceData = [];
-        let timeLabels = [];
-        let currentChart = 'speed';
-
         let settings = {
             updateInterval: 1000,
             speedUnit: 'kmh',
@@ -638,89 +537,6 @@
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors'
             }).addTo(map);
-        }
-
-        function initCharts() {
-            const speedCtx = document.getElementById('speedChart').getContext('2d');
-            const distanceCtx = document.getElementById('distanceChart').getContext('2d');
-
-            speedChart = new Chart(speedCtx, {
-                type: 'line',
-                data: {
-                    labels: timeLabels,
-                    datasets: [{
-                        label: 'Швидкість',
-                        data: speedData,
-                        borderColor: '#4a90e2',
-                        backgroundColor: 'rgba(74, 144, 226, 0.1)',
-                        tension: 0.4,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            labels: { color: '#ffffff' }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            ticks: { color: '#ffffff' },
-                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
-                        },
-                        y: {
-                            ticks: { color: '#ffffff' },
-                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
-                        }
-                    }
-                }
-            });
-
-            distanceChart = new Chart(distanceCtx, {
-                type: 'line',
-                data: {
-                    labels: timeLabels,
-                    datasets: [{
-                        label: 'Відстань',
-                        data: distanceData,
-                        borderColor: '#00ff88',
-                        backgroundColor: 'rgba(0, 255, 136, 0.1)',
-                        tension: 0.4,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            labels: { color: '#ffffff' }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            ticks: { color: '#ffffff' },
-                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
-                        },
-                        y: {
-                            ticks: { color: '#ffffff' },
-                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
-                        }
-                    }
-                }
-            });
-        }
-
-        function switchChart(chartType) {
-            const tabs = document.querySelectorAll('.chart-tab');
-            tabs.forEach(tab => tab.classList.remove('active'));
-            event.target.classList.add('active');
-
-            document.getElementById('speedChart').style.display = chartType === 'speed' ? 'block' : 'none';
-            document.getElementById('distanceChart').style.display = chartType === 'distance' ? 'block' : 'none';
-            currentChart = chartType;
         }
 
         function toggleSettings() {
@@ -829,12 +645,6 @@
             path = [];
             lastPosition = null;
             
-            speedData = [];
-            distanceData = [];
-            timeLabels = [];
-            if (speedChart) speedChart.update();
-            if (distanceChart) distanceChart.update();
-            
             document.getElementById('speedValue').textContent = '0';
             document.getElementById('distance').textContent = '0.00 ' + getDistanceUnit();
             document.getElementById('time').textContent = '00:00:00';
@@ -855,15 +665,12 @@
         }
 
         function exportData() {
-            if (speedData.length === 0) {
+            if (path.length === 0) {
                 updateStatus('Немає даних для експорту', 'error');
                 return;
             }
 
             const data = {
-                timestamps: timeLabels,
-                speeds: speedData,
-                distances: distanceData,
                 path: path,
                 totalDistance: totalDistance,
                 maxSpeed: maxSpeed,
@@ -895,17 +702,12 @@
             const displaySpeed = Math.round(convertedSpeed);
             
             const speedValueEl = document.getElementById('speedValue');
-            const needleEl = document.getElementById('speedNeedle');
             
             speedValueEl.style.transform = 'scale(1.1)';
             setTimeout(() => {
                 speedValueEl.textContent = displaySpeed;
                 speedValueEl.style.transform = 'scale(1)';
             }, 150);
-            
-            const maxDisplaySpeed = settings.speedUnit === 'ms' ? 50 : (settings.speedUnit === 'mph' ? 120 : 200);
-            const needleRotation = Math.min((displaySpeed / maxDisplaySpeed) * 180, 180);
-            needleEl.style.transform = `translate(-50%, 0) rotate(${needleRotation - 90}deg)`;
             
             if (displaySpeed > maxSpeed) {
                 maxSpeed = displaySpeed;
@@ -929,40 +731,9 @@
             }
 
             const currentTime = new Date().toLocaleTimeString();
-            timeLabels.push(currentTime);
-            speedData.push(displaySpeed);
-            distanceData.push(convertDistance(totalDistance));
-
-            // Keep only last 20 data points for performance
-            if (timeLabels.length > 20) {
-                timeLabels.shift();
-                speedData.shift();
-                distanceData.shift();
-            }
-
-            if (speedChart) speedChart.update('none');
-            if (distanceChart) distanceChart.update('none');
-
-            lastPosition = currentPos;
-            updateMap(currentPos);
-            updateTimeAndAvgSpeed();
+            document.getElementById('time').textContent = currentTime;
             
-            updateStatus(`GPS сигнал отримано (точність: ${Math.round(accuracy)}м)`, 'success');
-        }
-
-
-        function updateTimeAndAvgSpeed() {
-            if (!startTime) return;
-            
-            const elapsed = Date.now() - startTime;
-            const hours = Math.floor(elapsed / 3600000);
-            const minutes = Math.floor((elapsed % 3600000) / 60000);
-            const seconds = Math.floor((elapsed % 60000) / 1000);
-            
-            const timeStr = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            document.getElementById('time').textContent = timeStr;
-            
-            const avgSpeed = totalDistance > 0 ? (totalDistance / (elapsed / 3600000)) : 0;
+            const avgSpeed = totalDistance > 0 ? (totalDistance / ((Date.now() - startTime) / 3600000)) : 0;
             const convertedAvgSpeed = convertDistance(avgSpeed);
             const avgSpeedEl = document.getElementById('avgSpeed');
             const newAvgSpeed = Math.round(convertedAvgSpeed) + ' ' + getSpeedUnit();
@@ -971,6 +742,11 @@
                 avgSpeedEl.textContent = newAvgSpeed;
                 setTimeout(() => avgSpeedEl.classList.remove('updating'), 400);
             }
+
+            lastPosition = currentPos;
+            updateMap(currentPos);
+            
+            updateStatus(`GPS сигнал отримано (точність: ${Math.round(accuracy)}м)`, 'success');
         }
 
         function updateMap(position) {
@@ -1034,7 +810,6 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             initMap();
-            initCharts();
             
             document.getElementById('updateInterval').addEventListener('change', updateSettings);
             document.getElementById('speedUnit').addEventListener('change', updateSettings);
@@ -1044,10 +819,11 @@
             
             setInterval(() => {
                 if (isTracking) {
-                    updateTimeAndAvgSpeed();
+                    updateStatus('GPS сигнал отримано', 'success');
                 }
             }, 1000);
         });
     </script>
 </body>
 </html>
+
